@@ -1,0 +1,26 @@
+# Dockerfile.step3
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+# 런타임 의존성만 설치 (빌드 도구와 분리)
+RUN apk add --no-cache \
+    libstdc++ \
+    openblas
+
+# 빌드 도구를 임시로 설치하고 Python 패키지 설치 후 제거
+COPY requirements.txt .
+RUN apk add --no-cache --virtual .build-deps \
+    gcc \
+    g++ \
+    musl-dev \
+    linux-headers \
+    gfortran \
+    openblas-dev \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apk del .build-deps
+
+COPY . .
+
+EXPOSE 8000
+CMD ["python", "main.py"]

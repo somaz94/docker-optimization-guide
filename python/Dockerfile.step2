@@ -1,0 +1,18 @@
+# Dockerfile.step2  
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# 시스템 의존성 최소화
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+CMD ["python", "main.py"]

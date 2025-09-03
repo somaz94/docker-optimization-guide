@@ -1,0 +1,30 @@
+# Dockerfile.step4 
+FROM python:3.12-alpine AS builder  
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    gcc \
+    g++ \
+    musl-dev \
+    linux-headers \
+    gfortran \
+    openblas-dev
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# 런타임 스테이지
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache libstdc++
+
+COPY --from=builder /root/.local /root/.local
+COPY . .
+
+ENV PATH=/root/.local/bin:$PATH
+
+EXPOSE 8000
+CMD ["python", "main.py"]

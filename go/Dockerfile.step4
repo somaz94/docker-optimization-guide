@@ -1,0 +1,27 @@
+# Dockerfile.step4
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+# Alpine에 필요한 패키지 설치
+RUN apk --no-cache add ca-certificates tzdata
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o main .
+
+# 최종 스테이지: scratch (빈 이미지)
+FROM scratch
+
+# SSL 인증서 복사 (HTTPS 요청을 위해 필요)
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# 타임존 정보 복사 (Alpine의 경우)
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+
+COPY --from=builder /app/main /main
+
+EXPOSE 8080
+ENTRYPOINT ["/main"]

@@ -1,0 +1,23 @@
+# Dockerfile.step3
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+# 의존성 캐싱을 위한 레이어 분리
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main .
+
+# 런타임 스테이지
+FROM alpine:latest
+
+WORKDIR /root/
+
+# SSL 인증서와 타임존 정보 추가
+RUN apk --no-cache add ca-certificates tzdata
+COPY --from=builder /app/main .
+
+EXPOSE 8080
+CMD ["./main"]
