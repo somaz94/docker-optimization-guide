@@ -22,7 +22,7 @@ jobs:
         run: docker build -f Dockerfile.step${{ matrix.step }} -t go-step${{ matrix.step }} .
         working-directory: go
       - name: Show image size
-        run: docker images go-step${{ matrix.step }} --format "Go Step ${{ matrix.step }}: {{.Size}}"
+        run: docker images go-step${{ matrix.step }}
 
   build-python:
     name: Python - Step ${{ matrix.step }}
@@ -37,7 +37,7 @@ jobs:
         run: docker build -f Dockerfile.step${{ matrix.step }} -t py-step${{ matrix.step }} .
         working-directory: python
       - name: Show image size
-        run: docker images py-step${{ matrix.step }} --format "Python Step ${{ matrix.step }}: {{.Size}}"
+        run: docker images py-step${{ matrix.step }}
 
   build-nodejs:
     name: Node.js - Step ${{ matrix.step }}
@@ -52,7 +52,7 @@ jobs:
         run: docker build -f Dockerfile.step${{ matrix.step }} -t node-step${{ matrix.step }} .
         working-directory: nodejs
       - name: Show image size
-        run: docker images node-step${{ matrix.step }} --format "Node.js Step ${{ matrix.step }}: {{.Size}}"
+        run: docker images node-step${{ matrix.step }}
 
   build-java:
     name: Java - Step ${{ matrix.step }}
@@ -67,7 +67,7 @@ jobs:
         run: docker build -f Dockerfile.step${{ matrix.step }} -t java-step${{ matrix.step }} .
         working-directory: java
       - name: Show image size
-        run: docker images java-step${{ matrix.step }} --format "Java Step ${{ matrix.step }}: {{.Size}}"
+        run: docker images java-step${{ matrix.step }}
 
   build-rust:
     name: Rust - Step ${{ matrix.step }}
@@ -82,7 +82,7 @@ jobs:
         run: docker build -f Dockerfile.step${{ matrix.step }} -t rust-step${{ matrix.step }} .
         working-directory: rust
       - name: Show image size
-        run: docker images rust-step${{ matrix.step }} --format "Rust Step ${{ matrix.step }}: {{.Size}}"
+        run: docker images rust-step${{ matrix.step }}
 
   summary:
     name: Size Summary
@@ -94,6 +94,4 @@ jobs:
         run: |
           echo "## Docker Build Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Language | Step 1 | Step 2 | Step 3 | Step 4 |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|--------|--------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "All builds completed. Check individual jobs for image sizes." >> $GITHUB_STEP_SUMMARY
