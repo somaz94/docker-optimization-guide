@@ -1,0 +1,25 @@
+# Dockerfile.step3
+# Multi-stage with Alpine-based ASP.NET runtime
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS builder
+
+WORKDIR /app
+
+COPY *.csproj .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o out
+
+# Alpine-based runtime for smaller image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
+
+WORKDIR /app
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=builder /app/out .
+
+USER appuser
+
+EXPOSE 8080
+CMD ["dotnet", "ProductApi.dll"]

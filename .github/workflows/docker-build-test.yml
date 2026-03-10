@@ -84,10 +84,25 @@ jobs:
       - name: Show image size
         run: docker images rust-step${{ matrix.step }}
 
+  build-dotnet:
+    name: C# .NET - Step ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        step: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Dockerfile.step${{ matrix.step }}
+        run: docker build -f Dockerfile.step${{ matrix.step }} -t dotnet-step${{ matrix.step }} .
+        working-directory: dotnet
+      - name: Show image size
+        run: docker images dotnet-step${{ matrix.step }}
+
   summary:
     name: Size Summary
     runs-on: ubuntu-latest
-    needs: [build-go, build-python, build-nodejs, build-java, build-rust]
+    needs: [build-go, build-python, build-nodejs, build-java, build-rust, build-dotnet]
     if: always()
     steps:
       - name: Check results

@@ -9,6 +9,8 @@ __pycache__/
 *.jar
 !java/src/**
 *.class
+bin/
+obj/
 
 # IDE
 .idea/

@@ -1,0 +1,29 @@
+# Dockerfile.step4
+# Self-contained trimmed publish + Alpine runtime-deps (no .NET runtime needed)
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS builder
+
+WORKDIR /app
+
+COPY *.csproj .
+RUN dotnet restore -r linux-musl-x64
+
+COPY . .
+RUN dotnet publish -c Release -r linux-musl-x64 \
+    --self-contained true \
+    -p:PublishTrimmed=true \
+    -p:PublishSingleFile=true \
+    -o out
+
+# Minimal runtime with only native dependencies (no .NET runtime)
+FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-alpine
+
+WORKDIR /app
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=builder /app/out/ProductApi .
+
+USER appuser
+
+EXPOSE 8080
+CMD ["./ProductApi"]

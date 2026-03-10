@@ -3,7 +3,7 @@
 [![Docker Build Test](https://github.com/somaz94/docker-optimization-guide/actions/workflows/docker-build-test.yml/badge.svg)](https://github.com/somaz94/docker-optimization-guide/actions/workflows/docker-build-test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A hands-on, step-by-step guide to reducing Docker image sizes by up to **98%**. Learn progressive optimization techniques with real **Go**, **Python**, **Node.js**, **Java**, and **Rust** applications.
+A hands-on, step-by-step guide to reducing Docker image sizes by up to **98%**. Learn progressive optimization techniques with real **Go**, **Python**, **Node.js**, **Java**, **Rust**, and **C# .NET** applications.
 
 <br/>
 
@@ -66,6 +66,17 @@ A hands-on, step-by-step guide to reducing Docker image sizes by up to **98%**. 
 
 <br/>
 
+### C# .NET (Product API - ASP.NET Minimal API)
+
+| Step | Base Image | Technique | Size | Reduction |
+|------|-----------|-----------|------|-----------|
+| 1 | `dotnet/sdk:9.0` | Naive build | **1.25 GB** | - |
+| 2 | `dotnet/sdk:9.0` + `dotnet/aspnet:9.0` | Multi-stage + ASP.NET runtime | **358 MB** | -71.4% |
+| 3 | `dotnet/sdk:9.0` + `dotnet/aspnet:9.0-alpine` | Alpine ASP.NET runtime | **174 MB** | -86.1% |
+| 4 | `dotnet/sdk:9.0-alpine` + `runtime-deps:9.0-alpine` | Self-contained trimmed + runtime-deps | **48.4 MB** | -96.1% |
+
+<br/>
+
 ```
 Go Image Size Reduction
 Step 1  ██████████████████████████████████████████████████  369 MB
@@ -96,6 +107,12 @@ Step 1  ████████████████████████
 Step 2  ████████████████████████████████                    486 MB
 Step 3  ██████                                             94.8 MB
 Step 4  ████                                               64.8 MB
+
+C# .NET Image Size Reduction
+Step 1  ██████████████████████████████████████████████████  1.25 GB
+Step 2  ██████████████                                      358 MB
+Step 3  ███████                                             174 MB
+Step 4  ██                                                 48.4 MB
 ```
 
 <br/>
@@ -104,12 +121,12 @@ Step 4  ████                                               64.8 MB
 
 This guide uses realistic applications rather than trivial "hello world" examples:
 
-| | Go | Python | Node.js | Java | Rust |
-|---|---|---|---|---|---|
-| **App** | User REST API | ML Prediction API | Task Manager API | Book REST API | Note API |
-| **Framework** | gorilla/mux + Prometheus | FastAPI + pandas + numpy | Express + Helmet | Spring Boot + Actuator | Actix Web |
-| **Endpoints** | CRUD `/users`, `/health`, `/metrics` | `/predict`, `/health` | CRUD `/tasks`, `/health` | CRUD `/api/books`, `/api/health` | CRUD `/notes`, `/health` |
-| **Port** | 8080 | 8000 | 3000 | 8080 | 8080 |
+| | Go | Python | Node.js | Java | Rust | C# .NET |
+|---|---|---|---|---|---|---|
+| **App** | User REST API | ML Prediction API | Task Manager API | Book REST API | Note API | Product API |
+| **Framework** | gorilla/mux + Prometheus | FastAPI + pandas + numpy | Express + Helmet | Spring Boot + Actuator | Actix Web | ASP.NET Minimal API |
+| **Endpoints** | CRUD `/users`, `/health`, `/metrics` | `/predict`, `/health` | CRUD `/tasks`, `/health` | CRUD `/api/books`, `/api/health` | CRUD `/notes`, `/health` | CRUD `/api/products`, `/health` |
+| **Port** | 8080 | 8000 | 3000 | 8080 | 8080 | 8080 |
 
 <br/>
 
@@ -221,6 +238,24 @@ CMD ["./target/release/note-api"]
 ```
 
 **Problem**: The Rust toolchain, all compiled dependencies, and build artifacts remain in the image. The toolchain alone is ~500 MB.
+</details>
+
+<details>
+<summary><b>C# .NET - Dockerfile.step1</b> (1.25 GB)</summary>
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+WORKDIR /app
+
+COPY . .
+RUN dotnet publish -c Release -o out
+
+EXPOSE 8080
+CMD ["dotnet", "out/ProductApi.dll"]
+```
+
+**Problem**: The .NET SDK includes compilers, MSBuild, NuGet, and all development tools (~900 MB). Only the compiled DLLs are needed at runtime.
 </details>
 
 ---
@@ -357,6 +392,37 @@ CMD ["./target/release/note-api"]
 ```
 
 **Key change**: `rust:1.94-slim` removes docs and extra tools, but the Rust toolchain is still large.
+</details>
+
+<details>
+<summary><b>C# .NET - Dockerfile.step2</b> (358 MB, -71.4%)</summary>
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS builder
+
+WORKDIR /app
+
+COPY *.csproj .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o out
+
+# Runtime stage with ASP.NET runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+
+WORKDIR /app
+
+COPY --from=builder /app/out .
+
+EXPOSE 8080
+CMD ["dotnet", "ProductApi.dll"]
+```
+
+**Key changes**:
+- Multi-stage: SDK for building, ASP.NET runtime for running
+- `dotnet restore` is cached separately from the build for better layer reuse
+- ASP.NET runtime image is ~70% smaller than the SDK
 </details>
 
 ---
@@ -526,6 +592,40 @@ CMD ["note-api"]
 - Multi-stage: Rust toolchain is left in the builder stage
 - Runtime uses `debian:bookworm-slim` (~80 MB) - only libc and CA certs needed
 - Binary is dynamically linked against glibc
+</details>
+
+<details>
+<summary><b>C# .NET - Dockerfile.step3</b> (174 MB, -86.1%)</summary>
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS builder
+
+WORKDIR /app
+
+COPY *.csproj .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o out
+
+# Alpine-based runtime for smaller image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
+
+WORKDIR /app
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=builder /app/out .
+
+USER appuser
+
+EXPOSE 8080
+CMD ["dotnet", "ProductApi.dll"]
+```
+
+**Key changes**:
+- `aspnet:9.0-alpine` uses musl libc and minimal Alpine filesystem (~174 MB vs ~358 MB)
+- Non-root user for production security
 </details>
 
 ---
@@ -745,6 +845,49 @@ ENTRYPOINT ["/note-api"]
 > **Note**: Like Go, `scratch` means no shell access for debugging. Use `debian:bookworm-slim` (Step 3) if you need that.
 </details>
 
+<details>
+<summary><b>C# .NET - Dockerfile.step4</b> (48.4 MB, -96.1%)</summary>
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS builder
+
+WORKDIR /app
+
+COPY *.csproj .
+RUN dotnet restore -r linux-musl-x64
+
+COPY . .
+RUN dotnet publish -c Release -r linux-musl-x64 \
+    --self-contained true \
+    -p:PublishTrimmed=true \
+    -p:PublishSingleFile=true \
+    -o out
+
+# Minimal runtime with only native dependencies (no .NET runtime)
+FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-alpine
+
+WORKDIR /app
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=builder /app/out/ProductApi .
+
+USER appuser
+
+EXPOSE 8080
+CMD ["./ProductApi"]
+```
+
+**Key changes**:
+- **Self-contained publish**: Bundles the .NET runtime into the binary, so no runtime image needed
+- `PublishTrimmed=true`: IL Linker removes unused framework code (~60% smaller)
+- `PublishSingleFile=true`: Packs everything into a single executable
+- `runtime-deps:9.0-alpine`: Only native dependencies (ICU, OpenSSL) - no .NET runtime
+- `-r linux-musl-x64`: Targets Alpine's musl libc
+
+> **Note**: Trimming may remove code accessed via reflection. Test thoroughly with trimmed builds. For AOT compilation, use `PublishAot=true` (requires compatible code).
+</details>
+
 <br/>
 
 ## Quick Start
@@ -774,8 +917,12 @@ for i in 1 2 3 4; do docker build -f Dockerfile.step$i -t java-step$i .; done
 cd ../rust
 for i in 1 2 3 4; do docker build -f Dockerfile.step$i -t rust-step$i .; done
 
+# Build and compare C# .NET images
+cd ../dotnet
+for i in 1 2 3 4; do docker build -f Dockerfile.step$i -t dotnet-step$i .; done
+
 # Compare all sizes
-docker images | grep -E "(go|py|node|java|rust)-step" | sort
+docker images | grep -E "(go|py|node|java|rust|dotnet)-step" | sort
 ```
 
 <br/>
@@ -809,6 +956,11 @@ curl http://localhost:8080/api/books
 docker run -p 8080:8080 rust-step4
 curl http://localhost:8080/health
 curl http://localhost:8080/notes
+
+# C# .NET - Product API
+docker run -p 8080:8080 dotnet-step4
+curl http://localhost:8080/health
+curl http://localhost:8080/api/products
 ```
 
 <br/>
@@ -820,6 +972,7 @@ curl http://localhost:8080/notes
 | Use Alpine/Slim base images | High | All languages |
 | Multi-stage builds | Very High | All languages |
 | Strip debug symbols (`-ldflags="-w -s"`) | Medium | Go, C, C++, Rust |
+| Self-contained trimmed publish | Very High | C# .NET |
 | Static binary + scratch | Very High | Go, Rust |
 | Custom JRE with jlink | High | Java |
 | Spring Boot layered JARs | Medium | Java (Spring Boot) |
@@ -888,6 +1041,15 @@ docker-optimization-guide/
 │   ├── Dockerfile.step2     # Slim base (486 MB)
 │   ├── Dockerfile.step3     # Multi-stage + debian-slim (94.8 MB)
 │   └── Dockerfile.step4     # musl static + scratch (64.8 MB)
+├── dotnet/
+│   ├── Program.cs           # Product API (ASP.NET Minimal API)
+│   ├── Models/Product.cs
+│   ├── ProductApi.csproj
+│   ├── .dockerignore
+│   ├── Dockerfile.step1     # Full SDK (1.25 GB)
+│   ├── Dockerfile.step2     # Multi-stage + ASP.NET runtime (358 MB)
+│   ├── Dockerfile.step3     # Alpine ASP.NET runtime (174 MB)
+│   └── Dockerfile.step4     # Self-contained trimmed (48.4 MB)
 ├── README.md
 └── LICENSE
 ```

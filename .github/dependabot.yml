@@ -35,6 +35,13 @@ updates:
     commit-message:
       prefix: "chore(rust):"
 
+  - package-ecosystem: "nuget"
+    directory: "/dotnet"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(dotnet):"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
