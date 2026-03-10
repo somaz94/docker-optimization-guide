@@ -446,7 +446,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main .
 
 # Runtime stage
-FROM alpine:latest
+FROM alpine:3.21
 
 WORKDIR /root/
 
@@ -461,7 +461,7 @@ CMD ["./main"]
 - **Multi-stage build**: Build in one image, run in another
 - `CGO_ENABLED=0`: Static binary with no C dependencies
 - `-ldflags="-w -s"`: Strip debug info and symbol tables
-- Runtime uses `alpine:latest` (~8 MB) instead of the Go toolchain image
+- Runtime uses `alpine:3.21` (~8 MB) instead of the Go toolchain image
 </details>
 
 <details>
@@ -778,7 +778,7 @@ RUN jlink \
     --output /custom-jre
 
 # Minimal runtime
-FROM alpine:latest
+FROM alpine:3.21
 
 WORKDIR /app
 
