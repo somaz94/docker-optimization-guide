@@ -24,7 +24,7 @@ RUN jlink \
     --output /custom-jre
 
 # Minimal runtime
-FROM alpine:latest
+FROM alpine:3.21
 
 WORKDIR /app
 

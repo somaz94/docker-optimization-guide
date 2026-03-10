@@ -9,7 +9,7 @@ import os
 
 app = FastAPI(title="ML Prediction API", version="1.0.0")
 
-# 데이터 모델
+# Data models
 class PredictionRequest(BaseModel):
     features: list[float]
     model_name: str = "linear"
@@ -19,10 +19,10 @@ class PredictionResponse(BaseModel):
     confidence: float
     timestamp: str
 
-# 간단한 ML 모델 시뮬레이션
+# Simple ML model simulation
 class SimpleModel:
     def __init__(self):
-        # 실제로는 pickle로 로드된 모델일 것
+        # In production, this would be loaded from a pickle file
         self.weights = np.random.randn(10)
         
     def predict(self, features):

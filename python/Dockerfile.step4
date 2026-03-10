@@ -14,7 +14,7 @@ RUN apk add --no-cache \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# 런타임 스테이지
+# Runtime stage
 FROM python:3.12-alpine
 
 WORKDIR /app

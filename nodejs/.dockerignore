@@ -1,14 +1,10 @@
 .git
 .gitignore
+.github
 README.md
 Dockerfile*
 .DS_Store
 node_modules
 npm-debug.log
-coverage/
-.nyc_output
+coverage
 *.log
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local

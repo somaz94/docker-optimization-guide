@@ -3,7 +3,7 @@ FROM golang:1.24-alpine
 
 WORKDIR /app
 
-# Git 설치 (go mod download에 필요할 수 있음)
+# Install git (may be needed for go mod download)
 RUN apk add --no-cache git
 
 COPY go.mod go.sum ./
