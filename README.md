@@ -1,5 +1,8 @@
 # Docker Optimization Guide
 
+[![Docker Build Test](https://github.com/somaz94/docker-optimization-guide/actions/workflows/docker-build-test.yml/badge.svg)](https://github.com/somaz94/docker-optimization-guide/actions/workflows/docker-build-test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A hands-on, step-by-step guide to reducing Docker image sizes by up to **98%**. Learn progressive optimization techniques with real **Go**, **Python**, **Node.js**, **Java**, and **Rust** applications.
 
 <br/>

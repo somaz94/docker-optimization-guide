@@ -1,0 +1,99 @@
+name: Docker Build Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday at 9:00 UTC
+
+jobs:
+  build-go:
+    name: Go - Step ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        step: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Dockerfile.step${{ matrix.step }}
+        run: docker build -f Dockerfile.step${{ matrix.step }} -t go-step${{ matrix.step }} .
+        working-directory: go
+      - name: Show image size
+        run: docker images go-step${{ matrix.step }} --format "Go Step ${{ matrix.step }}: {{.Size}}"
+
+  build-python:
+    name: Python - Step ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        step: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Dockerfile.step${{ matrix.step }}
+        run: docker build -f Dockerfile.step${{ matrix.step }} -t py-step${{ matrix.step }} .
+        working-directory: python
+      - name: Show image size
+        run: docker images py-step${{ matrix.step }} --format "Python Step ${{ matrix.step }}: {{.Size}}"
+
+  build-nodejs:
+    name: Node.js - Step ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        step: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Dockerfile.step${{ matrix.step }}
+        run: docker build -f Dockerfile.step${{ matrix.step }} -t node-step${{ matrix.step }} .
+        working-directory: nodejs
+      - name: Show image size
+        run: docker images node-step${{ matrix.step }} --format "Node.js Step ${{ matrix.step }}: {{.Size}}"
+
+  build-java:
+    name: Java - Step ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        step: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Dockerfile.step${{ matrix.step }}
+        run: docker build -f Dockerfile.step${{ matrix.step }} -t java-step${{ matrix.step }} .
+        working-directory: java
+      - name: Show image size
+        run: docker images java-step${{ matrix.step }} --format "Java Step ${{ matrix.step }}: {{.Size}}"
+
+  build-rust:
+    name: Rust - Step ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        step: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Dockerfile.step${{ matrix.step }}
+        run: docker build -f Dockerfile.step${{ matrix.step }} -t rust-step${{ matrix.step }} .
+        working-directory: rust
+      - name: Show image size
+        run: docker images rust-step${{ matrix.step }} --format "Rust Step ${{ matrix.step }}: {{.Size}}"
+
+  summary:
+    name: Size Summary
+    runs-on: ubuntu-latest
+    needs: [build-go, build-python, build-nodejs, build-java, build-rust]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          echo "## Docker Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Language | Step 1 | Step 2 | Step 3 | Step 4 |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|--------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "All builds completed. Check individual jobs for image sizes." >> $GITHUB_STEP_SUMMARY

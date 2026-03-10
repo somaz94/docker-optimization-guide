@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+target/
+__pycache__/
+*.pyc
+.venv/
+
+# Build artifacts
+*.jar
+!java/src/**
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

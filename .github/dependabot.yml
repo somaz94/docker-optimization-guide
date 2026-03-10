@@ -1,0 +1,43 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/go"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(go):"
+
+  - package-ecosystem: "pip"
+    directory: "/python"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(python):"
+
+  - package-ecosystem: "npm"
+    directory: "/nodejs"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(nodejs):"
+
+  - package-ecosystem: "maven"
+    directory: "/java"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(java):"
+
+  - package-ecosystem: "cargo"
+    directory: "/rust"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(rust):"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(ci):"
