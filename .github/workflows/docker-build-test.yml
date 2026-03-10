@@ -17,7 +17,7 @@ jobs:
       matrix:
         step: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Dockerfile.step${{ matrix.step }}
         run: docker build -f Dockerfile.step${{ matrix.step }} -t go-step${{ matrix.step }} .
         working-directory: go
@@ -32,7 +32,7 @@ jobs:
       matrix:
         step: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Dockerfile.step${{ matrix.step }}
         run: docker build -f Dockerfile.step${{ matrix.step }} -t py-step${{ matrix.step }} .
         working-directory: python
@@ -47,7 +47,7 @@ jobs:
       matrix:
         step: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Dockerfile.step${{ matrix.step }}
         run: docker build -f Dockerfile.step${{ matrix.step }} -t node-step${{ matrix.step }} .
         working-directory: nodejs
@@ -62,7 +62,7 @@ jobs:
       matrix:
         step: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Dockerfile.step${{ matrix.step }}
         run: docker build -f Dockerfile.step${{ matrix.step }} -t java-step${{ matrix.step }} .
         working-directory: java
@@ -77,7 +77,7 @@ jobs:
       matrix:
         step: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Dockerfile.step${{ matrix.step }}
         run: docker build -f Dockerfile.step${{ matrix.step }} -t rust-step${{ matrix.step }} .
         working-directory: rust
@@ -92,7 +92,7 @@ jobs:
       matrix:
         step: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Dockerfile.step${{ matrix.step }}
         run: docker build -f Dockerfile.step${{ matrix.step }} -t dotnet-step${{ matrix.step }} .
         working-directory: dotnet
