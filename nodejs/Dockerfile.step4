@@ -1,0 +1,27 @@
+# Dockerfile.step4
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Runtime stage
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Add non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy only production dependencies and source
+COPY --from=builder /app/node_modules ./node_modules
+COPY src/ ./src/
+COPY package.json ./
+
+USER appuser
+
+ENV NODE_ENV=production
+
+EXPOSE 3000
+CMD ["node", "src/index.js"]

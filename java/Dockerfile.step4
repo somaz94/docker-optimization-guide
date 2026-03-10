@@ -1,0 +1,47 @@
+# Dockerfile.step4
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /app
+
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+COPY src ./src
+RUN mvn package -DskipTests
+
+# Extract Spring Boot layers for better caching
+RUN java -Djarmode=layertools -jar target/book-api-1.0.0.jar extract --destination extracted
+
+# Create custom JRE with jlink
+FROM eclipse-temurin:21-jdk-alpine AS jre-builder
+
+RUN jlink \
+    --add-modules java.base,java.logging,java.naming,java.net.http,java.security.jgss,java.sql,java.management,jdk.unsupported,java.desktop,java.instrument \
+    --strip-debug \
+    --compress zip-6 \
+    --no-header-files \
+    --no-man-pages \
+    --output /custom-jre
+
+# Minimal runtime
+FROM alpine:latest
+
+WORKDIR /app
+
+RUN apk add --no-cache libstdc++ \
+    && addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy custom JRE
+COPY --from=jre-builder /custom-jre /opt/java
+ENV PATH="/opt/java/bin:${PATH}"
+
+# Copy Spring Boot layers (most stable first for better caching)
+COPY --from=builder /app/extracted/dependencies/ ./
+COPY --from=builder /app/extracted/spring-boot-loader/ ./
+COPY --from=builder /app/extracted/snapshot-dependencies/ ./
+COPY --from=builder /app/extracted/application/ ./
+
+USER appuser
+
+EXPOSE 8080
+CMD ["java", "org.springframework.boot.loader.launch.JarLauncher"]

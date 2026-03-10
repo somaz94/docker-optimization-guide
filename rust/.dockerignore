@@ -1,0 +1,8 @@
+.git
+.gitignore
+README.md
+Dockerfile*
+.DS_Store
+target/
+*.log
+.env*

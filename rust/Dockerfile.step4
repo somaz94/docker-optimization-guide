@@ -1,0 +1,23 @@
+# Dockerfile.step4
+FROM rust:1.94-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache musl-dev
+
+COPY Cargo.toml ./
+COPY Cargo.lock* ./
+COPY src ./src
+
+# Static build with musl for scratch compatibility
+RUN cargo build --release --target x86_64-unknown-linux-musl || \
+    (rustup target add x86_64-unknown-linux-musl && cargo build --release --target x86_64-unknown-linux-musl)
+
+# Minimal runtime
+FROM scratch
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/note-api /note-api
+
+EXPOSE 8080
+ENTRYPOINT ["/note-api"]
