@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Extract Spring Boot layers for better caching
-RUN java -Djarmode=layertools -jar target/book-api-1.0.0.jar extract --destination extracted
+RUN java -Djarmode=tools -jar target/book-api-1.0.0.jar extract --layers --destination extracted
 
 # Create custom JRE with jlink
 FROM eclipse-temurin:21-jdk-alpine AS jre-builder
