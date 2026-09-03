@@ -15,10 +15,10 @@ A hands-on, step-by-step guide to reducing Docker image sizes by up to **98%**. 
 
 | Step | Base Image | Technique | Size | Reduction |
 |------|-----------|-----------|------|-----------|
-| 1 | `golang:1.24` | Naive build | **369 MB** | - |
-| 2 | `golang:1.24-alpine` | Alpine base | **134 MB** | -63.7% |
-| 3 | `golang:1.24-alpine` + `alpine` | Multi-stage build | **8.27 MB** | -97.8% |
-| 4 | `golang:1.24-alpine` + `scratch` | Scratch + stripped binary | **4.23 MB** | -98.9% |
+| 1 | `golang:1.25` | Naive build | **369 MB** | - |
+| 2 | `golang:1.25-alpine` | Alpine base | **134 MB** | -63.7% |
+| 3 | `golang:1.25-alpine` + `alpine` | Multi-stage build | **8.27 MB** | -97.8% |
+| 4 | `golang:1.25-alpine` + `scratch` | Scratch + stripped binary | **4.23 MB** | -98.9% |
 
 <br/>
 
@@ -142,7 +142,7 @@ Start with the official full-size base image. This is what most tutorials show y
 <summary><b>Go - Dockerfile.step1</b> (369 MB)</summary>
 
 ```dockerfile
-FROM golang:1.24
+FROM golang:1.25
 
 WORKDIR /app
 
@@ -268,7 +268,7 @@ Switch to Alpine or Slim variants to drop most of the OS bloat.
 <summary><b>Go - Dockerfile.step2</b> (134 MB, -63.7%)</summary>
 
 ```dockerfile
-FROM golang:1.24-alpine
+FROM golang:1.25-alpine
 
 WORKDIR /app
 
@@ -284,7 +284,7 @@ EXPOSE 8080
 CMD ["./main"]
 ```
 
-**Key change**: `golang:1.24-alpine` uses musl libc and a minimal Alpine filesystem instead of the full Debian base.
+**Key change**: `golang:1.25-alpine` uses musl libc and a minimal Alpine filesystem instead of the full Debian base.
 </details>
 
 <details>
@@ -435,7 +435,7 @@ Separate the build environment from the runtime environment.
 <summary><b>Go - Dockerfile.step3</b> (8.27 MB, -97.8%)</summary>
 
 ```dockerfile
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -638,7 +638,7 @@ Push to the smallest possible image for each language.
 <summary><b>Go - Dockerfile.step4</b> (4.23 MB, -98.9%)</summary>
 
 ```dockerfile
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
