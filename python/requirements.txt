@@ -1,5 +1,5 @@
 fastapi==0.141.1
 uvicorn[standard]==0.54.0
 pandas==3.0.6
-numpy==2.5.2
+numpy==2.5.4
 pydantic==2.13.5
